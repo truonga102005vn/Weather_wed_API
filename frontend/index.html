@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JermSky — Weather</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- Animated background orbs -->
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+<div class="bg-orb orb3"></div>
+<div class="noise"></div>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="logo">
+      <!-- <span class="logo-icon">◈</span> -->
+      <span class="logo-text">JermSky</span>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-btn active" data-tab="today">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/><circle cx="12" cy="12" r="4"/></svg>
+        Hôm nay
+      </button>
+      <button class="nav-btn" data-tab="forecast">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        7 Ngày
+      </button>
+      <button class="nav-btn" data-tab="hourly">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Theo Giờ
+      </button>
+      <button class="nav-btn" data-tab="airquality">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2h8l4 10H4L8 2z"/><path d="M12 12v10"/><path d="M8 22h8"/></svg>
+        Không Khí
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="gps-btn" id="gpsBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        Vị trí của tôi
+      </button>
+      <div class="unit-toggle">
+        <button class="unit-btn active" data-unit="metric">°C</button>
+        <button class="unit-btn" data-unit="imperial">°F</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+
+    <!-- Search bar -->
+    <div class="topbar">
+      <div class="search-wrap">
+        <svg class="search-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="searchBar" placeholder="Tìm thành phố..." />
+        <button class="search-btn" id="searchBtn">Tìm</button>
+      </div>
+      <div class="quick-tags">
+        <span class="tag" data-city="Da Nang">Đà Nẵng</span>
+        <span class="tag" data-city="Hanoi">Hà Nội</span>
+        <span class="tag" data-city="Ho Chi Minh City">TP.HCM</span>
+        <span class="tag" data-city="Tokyo">Tokyo</span>
+        <span class="tag" data-city="London">London</span>
+      </div>
+    </div>
+
+
+    <!-- Error -->
+    <div class="error-toast" id="errorToast"></div>
+
+    <!-- Loading -->
+    <div class="loader" id="loader">
+      <div class="loader-ring"></div>
+      <span>Đang tải dữ liệu...</span>
+    </div>
+
+    <!-- ===== TAB: TODAY ===== -->
+    <section class="tab-content active" id="tab-today">
+      <div class="hero-card glass" id="heroCard">
+        <div class="hero-left">
+          <div class="hero-location" id="heroLocation">—</div>
+          <div class="hero-date" id="heroDate">—</div>
+          <div class="hero-temp" id="heroTemp">—</div>
+          <div class="hero-desc" id="heroDesc">—</div>
+          <div class="hero-range" id="heroRange">—</div>
+        </div>
+        <div class="hero-right">
+          <img class="hero-icon" id="heroIcon" src="" alt="" />
+          <div class="hero-feels" id="heroFeels">—</div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat glass">
+          <div class="stat-lbl">💧 Độ ẩm</div>
+          <div class="stat-val" id="sHumidity">—</div>
+        </div>
+        <div class="stat glass">
+          <div class="stat-lbl">💨 Gió</div>
+          <div class="stat-val" id="sWind">—</div>
+        </div>
+        <div class="stat glass">
+          <div class="stat-lbl">👁 Tầm nhìn</div>
+          <div class="stat-val" id="sVis">—</div>
+        </div>
+        <div class="stat glass">
+          <div class="stat-lbl">🌡 Áp suất</div>
+          <div class="stat-val" id="sPressure">—</div>
+        </div>
+        <div class="stat glass">
+          <div class="stat-lbl">🌅 Bình minh</div>
+          <div class="stat-val" id="sSunrise">—</div>
+        </div>
+        <div class="stat glass">
+          <div class="stat-lbl">🌇 Hoàng hôn</div>
+          <div class="stat-val" id="sSunset">—</div>
+        </div>
+        <div class="stat glass">
+          <div class="stat-lbl">☁️ Mây</div>
+          <div class="stat-val" id="sClouds">—</div>
+        </div>
+        <div class="stat glass">
+          <div class="stat-lbl">🌬 Hướng gió</div>
+          <div class="stat-val" id="sWindDir">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TAB: 7-DAY FORECAST ===== -->
+    <section class="tab-content" id="tab-forecast">
+      <div class="section-title">Dự báo 7 ngày tới</div>
+      <div class="forecast-list" id="forecastList"></div>
+    </section>
+
+    <!-- ===== TAB: HOURLY ===== -->
+    <section class="tab-content" id="tab-hourly">
+      <div class="section-title">Nhiệt độ 24 giờ tới</div>
+      <div class="chart-wrap glass">
+        <canvas id="hourlyChart" height="200"></canvas>
+      </div>
+      <div class="hourly-cards" id="hourlyCards"></div>
+    </section>
+
+    <!-- ===== TAB: AIR QUALITY ===== -->
+    <section class="tab-content" id="tab-airquality">
+      <div class="section-title">Chất lượng không khí & Chỉ số UV</div>
+      <div class="aqi-hero glass" id="aqiHero">
+        <div class="aqi-score-wrap">
+          <div class="aqi-label">AQI</div>
+          <div class="aqi-score" id="aqiScore">—</div>
+          <div class="aqi-status" id="aqiStatus">—</div>
+        </div>
+        <div class="aqi-bar-wrap">
+          <div class="aqi-bar"><div class="aqi-bar-fill" id="aqiBarFill"></div></div>
+          <div class="aqi-bar-labels"><span>Tốt</span><span>TB</span><span>Xấu</span><span>Nguy hiểm</span></div>
+        </div>
+      </div>
+      <div class="aqi-grid">
+        <div class="stat glass"><div class="stat-lbl">🔬 PM2.5</div><div class="stat-val" id="aqiPM25">—</div></div>
+        <div class="stat glass"><div class="stat-lbl">🔬 PM10</div><div class="stat-val" id="aqiPM10">—</div></div>
+        <div class="stat glass"><div class="stat-lbl">⚗️ CO</div><div class="stat-val" id="aqiCO">—</div></div>
+        <div class="stat glass"><div class="stat-lbl">⚗️ NO₂</div><div class="stat-val" id="aqiNO2">—</div></div>
+        <div class="stat glass"><div class="stat-lbl">⚗️ O₃</div><div class="stat-val" id="aqiO3">—</div></div>
+        <div class="stat glass"><div class="stat-lbl">🌞 UV Index</div><div class="stat-val" id="uvIndex">—</div></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
