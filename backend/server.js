@@ -4,10 +4,10 @@
 // ================================================
 
 require('dotenv').config();
-const express    = require('express');
-const cors       = require('cors');
-const mongoose   = require('mongoose');
-const rateLimit  = require('express-rate-limit');
+const express   = require('express');
+const cors      = require('cors');
+const mongoose  = require('mongoose');
+const rateLimit = require('express-rate-limit');
 
 const weatherRoutes = require('./routes/weather');
 const authRoutes    = require('./routes/auth');
@@ -18,12 +18,16 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 // ------------------------------------------------
-// Middleware
+// CORS — cho phép tất cả domain kết nối
 // ------------------------------------------------
 app.use(cors({
-  origin: ['http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:3001'],
-  credentials: true,
+  origin: '*',
+  credentials: false,
 }));
+
+// ------------------------------------------------
+// Middleware
+// ------------------------------------------------
 app.use(express.json());
 
 // Rate limit toàn bộ API — tối đa 100 req / 15 phút / IP
@@ -72,12 +76,3 @@ mongoose
     console.error('❌ MongoDB connection failed:', err.message);
     process.exit(1);
   });
-
-  app.use(cors({
-  origin: [
-    'http://localhost:5500',
-    'http://127.0.0.1:5500',
-    'https://jermsky.vercel.app',
-  ],
-  credentials: true,
-}));
