@@ -5,7 +5,7 @@
 
 'use strict';
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = 'https://jermsky-backend.onrender.com/api';
 
 const State = {
   token: localStorage.getItem('jermsky_token') || '',
