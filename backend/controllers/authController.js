@@ -1,124 +1,238 @@
 // ================================================
 //  controllers/authController.js
-//  Đăng ký / Đăng nhập / Lấy thông tin user
+//  Register / Login / Profile / Change Password
 // ================================================
 
 const jwt  = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Tạo JWT token
+/**
+ * Tạo JWT token
+ */
 function signToken(user) {
   return jwt.sign(
-    { id: user._id || user.id, username: user.username, email: user.email },
+    {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      isAdmin: user.isAdmin // 🔥 QUAN TRỌNG
+    },
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    {
+      expiresIn: process.env.JWT_EXPIRES_IN || '7d'
+    }
   );
 }
 
-// ------------------------------------------------
-// POST /api/auth/register
-// Body: { username, email, password }
-// ------------------------------------------------
+/**
+ * Format dữ liệu trả về (tránh leak)
+ */
+function formatUser(user) {
+  return {
+    id: user._id,
+    username: user.username,
+    email: user.email,
+    isAdmin: user.isAdmin,
+    favoriteCity: user.favoriteCity,
+    preferredUnit: user.preferredUnit
+  };
+}
+
+// ================================================
+// REGISTER
+// ================================================
 exports.register = async (req, res, next) => {
   try {
-    const { username, email, password } = req.body;
+    let { username, email, password } = req.body;
+
+    // Trim dữ liệu
+    username = username?.trim();
+    email = email?.trim().toLowerCase();
 
     if (!username || !email || !password) {
-      return res.status(400).json({ error: 'Vui lòng điền đầy đủ username, email, password.' });
+      return res.status(400).json({
+        error: 'Vui lòng điền đầy đủ thông tin.'
+      });
     }
 
-    // Kiểm tra trùng
-    const exists = await User.findOne({ $or: [{ email }, { username }] });
+    // Kiểm tra tồn tại
+    const exists = await User.findOne({
+      $or: [{ email }, { username }]
+    });
+
     if (exists) {
       const field = exists.email === email ? 'Email' : 'Username';
-      return res.status(409).json({ error: `${field} đã được sử dụng.` });
+      return res.status(409).json({
+        error: `${field} đã được sử dụng.`
+      });
     }
 
+    // Tạo user
     const user = await User.create({ username, email, password });
+
+    // Tạo token
     const token = signToken(user);
 
     res.status(201).json({
       message: 'Đăng ký thành công!',
       token,
-      user: { id: user._id, username: user.username, email: user.email },
+      user: formatUser(user)
     });
+
   } catch (err) {
-    // Mongoose validation error
     if (err.name === 'ValidationError') {
-      const messages = Object.values(err.errors).map(e => e.message);
-      return res.status(400).json({ error: messages.join(', ') });
+      return res.status(400).json({
+        error: Object.values(err.errors)
+          .map(e => e.message)
+          .join(', ')
+      });
     }
     next(err);
   }
 };
 
-// ------------------------------------------------
-// POST /api/auth/login
-// Body: { email, password }
-// ------------------------------------------------
+// ================================================
+// LOGIN
+// ================================================
 exports.login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+
+    email = email?.trim().toLowerCase();
 
     if (!email || !password) {
-      return res.status(400).json({ error: 'Vui lòng nhập email và password.' });
+      return res.status(400).json({
+        error: 'Vui lòng nhập email và password.'
+      });
     }
 
-    // Lấy user kèm password (bị ẩn mặc định)
+    // Lấy user + password
     const user = await User.findOne({ email }).select('+password');
-    if (!user) {
-      return res.status(401).json({ error: 'Email hoặc password không đúng.' });
+
+    if (!user || !(await user.comparePassword(password))) {
+      return res.status(401).json({
+        error: 'Email hoặc password không đúng.'
+      });
     }
 
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Email hoặc password không đúng.' });
-    }
+    // Cập nhật login time
+    user.lastLoginAt = new Date();
+    await user.save({ validateBeforeSave: false });
 
     const token = signToken(user);
 
     res.json({
       message: 'Đăng nhập thành công!',
       token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        favoriteCity: user.favoriteCity,
-        preferredUnit: user.preferredUnit,
-      },
+      user: formatUser(user)
     });
+
   } catch (err) {
     next(err);
   }
 };
 
-// ------------------------------------------------
-// GET /api/auth/me  (cần đăng nhập)
-// ------------------------------------------------
+// ================================================
+// GET PROFILE
+// ================================================
 exports.getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ error: 'Không tìm thấy user.' });
-    res.json({ user });
+
+    if (!user) {
+      return res.status(404).json({
+        error: 'Không tìm thấy user.'
+      });
+    }
+
+    res.json({
+      user: formatUser(user)
+    });
+
   } catch (err) {
     next(err);
   }
 };
 
-// ------------------------------------------------
-// PATCH /api/auth/me  (cập nhật profile)
-// Body: { favoriteCity?, preferredUnit? }
-// ------------------------------------------------
+// ================================================
+// UPDATE PROFILE
+// ================================================
 exports.updateMe = async (req, res, next) => {
   try {
     const { favoriteCity, preferredUnit } = req.body;
-    const update = {};
-    if (favoriteCity !== undefined) update.favoriteCity = favoriteCity;
-    if (preferredUnit !== undefined) update.preferredUnit = preferredUnit;
 
-    const user = await User.findByIdAndUpdate(req.user.id, update, { new: true, runValidators: true });
-    res.json({ message: 'Cập nhật thành công!', user });
+    const update = {};
+
+    if (favoriteCity !== undefined) {
+      update.favoriteCity = favoriteCity;
+    }
+
+    if (preferredUnit !== undefined) {
+      update.preferredUnit = preferredUnit;
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      update,
+      {
+        new: true,
+        runValidators: true
+      }
+    );
+
+    res.json({
+      message: 'Cập nhật thành công!',
+      user: formatUser(user)
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ================================================
+// CHANGE PASSWORD
+// ================================================
+exports.changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        error: 'Vui lòng cung cấp mật khẩu hiện tại và mật khẩu mới.'
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        error: 'Mật khẩu mới phải có ít nhất 6 ký tự.'
+      });
+    }
+
+    const user = await User.findById(req.user.id).select('+password');
+
+    if (!user) {
+      return res.status(404).json({
+        error: 'Không tìm thấy người dùng.'
+      });
+    }
+
+    const isMatch = await user.comparePassword(currentPassword);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        error: 'Mật khẩu hiện tại không đúng.'
+      });
+    }
+
+    // Gán password mới → sẽ tự hash nhờ pre-save
+    user.password = newPassword;
+    await user.save();
+
+    res.json({
+      message: 'Đổi mật khẩu thành công!'
+    });
+
   } catch (err) {
     next(err);
   }

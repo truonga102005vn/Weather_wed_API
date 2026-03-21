@@ -1,6 +1,6 @@
 // ================================================
 //  models/User.js
-//  Schema tài khoản người dùng
+//  Schema User + Hash password + Methods
 // ================================================
 
 const mongoose = require('mongoose');
@@ -13,50 +13,73 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Username là bắt buộc'],
       unique: true,
       trim: true,
-      minlength: [3, 'Username tối thiểu 3 ký tự'],
-      maxlength: [30, 'Username tối đa 30 ký tự'],
+      minlength: [3, 'Tối thiểu 3 ký tự'],
+      maxlength: [30, 'Tối đa 30 ký tự']
     },
+
     email: {
       type: String,
       required: [true, 'Email là bắt buộc'],
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, 'Email không hợp lệ'],
+      match: [/^\S+@\S+\.\S+$/, 'Email không hợp lệ']
     },
+
     password: {
       type: String,
       required: [true, 'Password là bắt buộc'],
-      minlength: [6, 'Password tối thiểu 6 ký tự'],
-      select: false, // Không trả password trong query mặc định
+      minlength: [6, 'Tối thiểu 6 ký tự'],
+      select: false // không trả về mặc định
     },
+
+    isAdmin: {
+      type: Boolean,
+      default: false
+    },
+
     favoriteCity: {
       type: String,
-      default: '',
+      default: ''
     },
+
     preferredUnit: {
       type: String,
       enum: ['metric', 'imperial'],
-      default: 'metric',
+      default: 'metric'
     },
+
+    lastLoginAt: {
+      type: Date
+    }
   },
-  { timestamps: true }
+  {
+    timestamps: true
+  }
 );
 
-// Hash password trước khi lưu
+/**
+ * Hash password trước khi lưu
+ */
 userSchema.pre('save', async function (next) {
+  // Nếu không sửa password thì bỏ qua
   if (!this.isModified('password')) return next();
-  const salt = await bcrypt.genSalt(12);
-  this.password = await bcrypt.hash(this.password, salt);
+
+  // Hash password
+  this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
-// Method kiểm tra password
-userSchema.methods.comparePassword = async function (inputPassword) {
-  return bcrypt.compare(inputPassword, this.password);
+/**
+ * So sánh password
+ */
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Không trả _id dạng __v
+/**
+ * Ẩn field nhạy cảm khi trả về JSON
+ */
 userSchema.set('toJSON', {
   transform: (doc, ret) => {
     ret.id = ret._id;
@@ -64,7 +87,7 @@ userSchema.set('toJSON', {
     delete ret.__v;
     delete ret.password;
     return ret;
-  },
+  }
 });
 
 module.exports = mongoose.model('User', userSchema);

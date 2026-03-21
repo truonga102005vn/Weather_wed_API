@@ -5,13 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>JermSky — Weather</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- Animated background orbs -->
 <div class="bg-orb orb1"></div>
 <div class="bg-orb orb2"></div>
 <div class="bg-orb orb3"></div>
@@ -19,13 +17,12 @@
 
 <div class="app">
 
-  <!-- ===== SIDEBAR ===== -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="logo">
-      <!-- <span class="logo-icon">◈</span> -->
+      <span class="logo-icon">◈</span>
       <span class="logo-text">JermSky</span>
     </div>
-
     <nav class="nav">
       <button class="nav-btn active" data-tab="today">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/><circle cx="12" cy="12" r="4"/></svg>
@@ -43,9 +40,34 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2h8l4 10H4L8 2z"/><path d="M12 12v10"/><path d="M8 22h8"/></svg>
         Không Khí
       </button>
+      <button class="nav-btn" data-tab="history" id="historyNavBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Lịch Sử
+      </button>
+      <button class="nav-btn nav-btn-premium" data-tab="bulletin" id="bulletinNavBtn" style="display:none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+        Bản Tin
+        <span class="nav-badge">✦</span>
+      </button>
     </nav>
-
     <div class="sidebar-footer">
+      <!-- User info / auth button -->
+      <div class="user-area" id="userArea">
+        <div class="user-info hidden" id="userInfo">
+          <div class="user-avatar" id="userAvatar" onclick="openProfileModal()" title="Chỉnh sửa hồ sơ">J</div>
+          <div class="user-details">
+            <div class="user-name" id="userName">—</div>
+            <div style="display:flex;gap:6px;margin-top:3px">
+              <button class="profile-btn" onclick="openProfileModal()">Hồ sơ</button>
+              <button class="logout-btn" onclick="doLogout()">Đăng xuất</button>
+            </div>
+          </div>
+        </div>
+        <button class="auth-open-btn" id="authOpenBtn" onclick="openAuthModal('login')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Đăng nhập
+        </button>
+      </div>
       <button class="gps-btn" id="gpsBtn">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
         Vị trí của tôi
@@ -57,10 +79,8 @@
     </div>
   </aside>
 
-  <!-- ===== MAIN ===== -->
+  <!-- MAIN -->
   <main class="main">
-
-    <!-- Search bar -->
     <div class="topbar">
       <div class="search-wrap">
         <svg class="search-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -76,17 +96,14 @@
       </div>
     </div>
 
-
-    <!-- Error -->
     <div class="error-toast" id="errorToast"></div>
-
-    <!-- Loading -->
+    <div class="success-toast" id="successToast"></div>
     <div class="loader" id="loader">
       <div class="loader-ring"></div>
       <span>Đang tải dữ liệu...</span>
     </div>
 
-    <!-- ===== TAB: TODAY ===== -->
+    <!-- TAB: TODAY -->
     <section class="tab-content active" id="tab-today">
       <div class="hero-card glass" id="heroCard">
         <div class="hero-left">
@@ -101,59 +118,32 @@
           <div class="hero-feels" id="heroFeels">—</div>
         </div>
       </div>
-
       <div class="stats-grid">
-        <div class="stat glass">
-          <div class="stat-lbl">💧 Độ ẩm</div>
-          <div class="stat-val" id="sHumidity">—</div>
-        </div>
-        <div class="stat glass">
-          <div class="stat-lbl">💨 Gió</div>
-          <div class="stat-val" id="sWind">—</div>
-        </div>
-        <div class="stat glass">
-          <div class="stat-lbl">👁 Tầm nhìn</div>
-          <div class="stat-val" id="sVis">—</div>
-        </div>
-        <div class="stat glass">
-          <div class="stat-lbl">🌡 Áp suất</div>
-          <div class="stat-val" id="sPressure">—</div>
-        </div>
-        <div class="stat glass">
-          <div class="stat-lbl">🌅 Bình minh</div>
-          <div class="stat-val" id="sSunrise">—</div>
-        </div>
-        <div class="stat glass">
-          <div class="stat-lbl">🌇 Hoàng hôn</div>
-          <div class="stat-val" id="sSunset">—</div>
-        </div>
-        <div class="stat glass">
-          <div class="stat-lbl">☁️ Mây</div>
-          <div class="stat-val" id="sClouds">—</div>
-        </div>
-        <div class="stat glass">
-          <div class="stat-lbl">🌬 Hướng gió</div>
-          <div class="stat-val" id="sWindDir">—</div>
-        </div>
+        <div class="stat glass"><div class="stat-lbl">💧 Độ ẩm</div><div class="stat-val" id="sHumidity">—</div></div>
+        <div class="stat glass"><div class="stat-lbl">💨 Gió</div><div class="stat-val" id="sWind">—</div></div>
+        <div class="stat glass"><div class="stat-lbl">👁 Tầm nhìn</div><div class="stat-val" id="sVis">—</div></div>
+        <div class="stat glass"><div class="stat-lbl">🌡 Áp suất</div><div class="stat-val" id="sPressure">—</div></div>
+        <div class="stat glass"><div class="stat-lbl">🌅 Bình minh</div><div class="stat-val" id="sSunrise">—</div></div>
+        <div class="stat glass"><div class="stat-lbl">🌇 Hoàng hôn</div><div class="stat-val" id="sSunset">—</div></div>
+        <div class="stat glass"><div class="stat-lbl">☁️ Mây</div><div class="stat-val" id="sClouds">—</div></div>
+        <div class="stat glass"><div class="stat-lbl">🌬 Hướng gió</div><div class="stat-val" id="sWindDir">—</div></div>
       </div>
     </section>
 
-    <!-- ===== TAB: 7-DAY FORECAST ===== -->
+    <!-- TAB: 7-DAY FORECAST -->
     <section class="tab-content" id="tab-forecast">
-      <div class="section-title">Dự báo 7 ngày tới</div>
+      <div class="section-title">Dự báo 7 ngày tới — <span style="font-size:12px;font-weight:400;opacity:0.6">Bấm vào từng ngày để xem chi tiết</span></div>
       <div class="forecast-list" id="forecastList"></div>
     </section>
 
-    <!-- ===== TAB: HOURLY ===== -->
+    <!-- TAB: HOURLY -->
     <section class="tab-content" id="tab-hourly">
       <div class="section-title">Nhiệt độ 24 giờ tới</div>
-      <div class="chart-wrap glass">
-        <canvas id="hourlyChart" height="200"></canvas>
-      </div>
+      <div class="chart-wrap glass"><canvas id="hourlyChart" height="200"></canvas></div>
       <div class="hourly-cards" id="hourlyCards"></div>
     </section>
 
-    <!-- ===== TAB: AIR QUALITY ===== -->
+    <!-- TAB: AIR QUALITY -->
     <section class="tab-content" id="tab-airquality">
       <div class="section-title">Chất lượng không khí & Chỉ số UV</div>
       <div class="aqi-hero glass" id="aqiHero">
@@ -177,7 +167,284 @@
       </div>
     </section>
 
+    <!-- TAB: HISTORY -->
+    <section class="tab-content" id="tab-history">
+      <div class="section-title">Lịch sử tìm kiếm</div>
+      <div class="history-login-notice glass" id="historyLoginNotice">
+        <div style="font-size:32px;margin-bottom:12px">🔐</div>
+        <div style="font-weight:600;margin-bottom:6px">Đăng nhập để xem lịch sử</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Lịch sử tìm kiếm được lưu theo tài khoản của bạn</div>
+        <button class="search-btn" onclick="openAuthModal('login')">Đăng nhập ngay</button>
+      </div>
+      <div class="history-logged" id="historyLogged" style="display:none">
+        <div class="history-topbar">
+          <span id="historyCount" style="font-size:13px;color:var(--muted)"></span>
+          <button class="clear-history-btn" onclick="doClearHistory()">🗑 Xóa tất cả</button>
+        </div>
+        <div class="history-list" id="historyList"></div>
+      </div>
+    </section>
+    <!-- TAB: BULLETIN -->
+    <section class="tab-content" id="tab-bulletin">
+      <!-- Header -->
+      <div class="bulletin-header">
+        <div>
+          <div class="section-title" style="margin-bottom:4px">Bản Tin Thời Tiết</div>
+          <div class="bulletin-sub" id="bulletinSub">Dựa trên lịch sử tìm kiếm của bạn</div>
+        </div>
+        <button class="bulletin-refresh-btn" id="bulletinRefreshBtn" onclick="loadBulletin()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Cập nhật
+        </button>
+      </div>
+
+      <div class="bulletin-loader" id="bulletinLoader" style="display:none">
+        <div class="loader-ring"></div>
+        <span>Đang tải bản tin...</span>
+      </div>
+
+      <div id="bulletinContent">
+        <!-- ALERTS -->
+        <div class="bulletin-section" id="alertsSection" style="display:none">
+          <div class="bulletin-section-title">
+            <span class="bulletin-section-icon">⚠️</span> Cảnh báo thời tiết
+          </div>
+          <div id="alertsList"></div>
+        </div>
+
+        <!-- WORLD NEWS — top cities -->
+        <div class="bulletin-section">
+          <div class="bulletin-section-title">
+            <span class="bulletin-section-icon">🌍</span> Thời tiết thế giới
+          </div>
+          <div class="world-grid" id="worldGrid"></div>
+        </div>
+
+        <!-- USER CITIES — from history -->
+        <div class="bulletin-section" id="myCitiesSection" style="display:none">
+          <div class="bulletin-section-title">
+            <span class="bulletin-section-icon">📍</span> Thành phố của bạn
+            <span class="bulletin-section-hint">Từ lịch sử tìm kiếm</span>
+          </div>
+          <div class="my-cities-grid" id="myCitiesGrid"></div>
+        </div>
+
+        <!-- WEEKLY STATS CHART -->
+        <div class="bulletin-section" id="weeklySection" style="display:none">
+          <div class="bulletin-section-title">
+            <span class="bulletin-section-icon">📊</span> Thống kê nhiệt độ 5 ngày tới
+            <span class="bulletin-section-hint" id="weeklyCity"></span>
+          </div>
+          <div class="weekly-chart-wrap glass">
+            <canvas id="weeklyChart" height="180"></canvas>
+          </div>
+          <div class="weekly-summary" id="weeklySummary"></div>
+        </div>
+      </div>
+    </section>
   </main>
+</div>
+
+<!-- ===== AUTH MODAL ===== -->
+<div class="modal-overlay" id="authOverlay" onclick="closeAuthModal()">
+  <div class="modal glass" onclick="event.stopPropagation()" style="max-width:420px">
+    <button class="modal-close" onclick="closeAuthModal()">✕</button>
+
+    <!-- Tab switch -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="loginTab" onclick="switchAuthTab('login')">Đăng nhập</button>
+      <button class="auth-tab" id="registerTab" onclick="switchAuthTab('register')">Đăng ký</button>
+    </div>
+
+    <!-- Login form -->
+    <div id="loginForm">
+      <div class="auth-title">Chào mừng trở lại 👋</div>
+      <div class="auth-sub">Đăng nhập để lưu lịch sử tìm kiếm</div>
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="email@example.com" />
+      </div>
+      <div class="auth-field">
+        <label>Mật khẩu</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" />
+      </div>
+      <div class="auth-error" id="loginError"></div>
+      <button class="auth-submit" id="loginSubmit" onclick="doLogin()">Đăng nhập</button>
+    </div>
+
+    <!-- Register form -->
+    <div id="registerForm" style="display:none">
+      <div class="auth-title">Tạo tài khoản mới ✨</div>
+      <div class="auth-sub">Miễn phí, không cần thẻ tín dụng</div>
+      <div class="auth-field">
+        <label>Username</label>
+        <input type="text" id="regUsername" placeholder="tênđăngký" />
+      </div>
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="regEmail" placeholder="email@example.com" />
+      </div>
+      <div class="auth-field">
+        <label>Mật khẩu</label>
+        <input type="password" id="regPassword" placeholder="Tối thiểu 6 ký tự" />
+      </div>
+      <div class="auth-error" id="registerError"></div>
+      <button class="auth-submit" id="registerSubmit" onclick="doRegister()">Đăng ký</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FORECAST DETAIL MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+  <div class="modal glass" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-header">
+      <div class="modal-day" id="modalDay">—</div>
+      <div class="modal-date" id="modalDate">—</div>
+    </div>
+    <div class="modal-hero">
+      <img class="modal-icon" id="modalIcon" src="" alt="" />
+      <div>
+        <div class="modal-temp" id="modalTemp">—</div>
+        <div class="modal-desc" id="modalDesc">—</div>
+      </div>
+    </div>
+    <div class="modal-range-bar">
+      <span class="modal-lo" id="modalLo">—</span>
+      <div class="modal-bar"><div class="modal-bar-fill" id="modalBarFill"></div></div>
+      <span class="modal-hi" id="modalHi">—</span>
+    </div>
+    <div class="modal-grid">
+      <div class="modal-stat"><div class="modal-stat-lbl">💧 Độ ẩm</div><div class="modal-stat-val" id="modalHumidity">—</div></div>
+      <div class="modal-stat"><div class="modal-stat-lbl">💨 Gió</div><div class="modal-stat-val" id="modalWind">—</div></div>
+      <div class="modal-stat"><div class="modal-stat-lbl">🌡 Áp suất</div><div class="modal-stat-val" id="modalPressure">—</div></div>
+      <div class="modal-stat"><div class="modal-stat-lbl">☁️ Mây</div><div class="modal-stat-val" id="modalClouds">—</div></div>
+      <div class="modal-stat"><div class="modal-stat-lbl">💧 Xác suất mưa</div><div class="modal-stat-val" id="modalPop">—</div></div>
+      <div class="modal-stat"><div class="modal-stat-lbl">🌬 Gió giật</div><div class="modal-stat-val" id="modalGust">—</div></div>
+    </div>
+    <div class="modal-chart-title">Nhiệt độ trong ngày</div>
+    <div class="modal-chart-wrap"><canvas id="modalChart" height="120"></canvas></div>
+  </div>
+</div>
+
+<!-- ===== PROFILE MODAL ===== -->
+<div class="modal-overlay" id="profileOverlay" onclick="closeProfileModal()">
+  <div class="modal profile-modal glass" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeProfileModal()">✕</button>
+
+    <!-- Profile tabs -->
+    <div class="profile-tabs">
+      <button class="profile-tab active" data-ptab="info">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Thông tin
+      </button>
+      <button class="profile-tab" data-ptab="password">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Mật khẩu
+      </button>
+      <button class="profile-tab" data-ptab="settings">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Cài đặt
+      </button>
+    </div>
+
+    <!-- TAB: Thông tin -->
+    <div class="profile-tab-content active" id="ptab-info">
+      <!-- Avatar section -->
+      <div class="avatar-section">
+        <div class="avatar-preview" id="avatarPreview">
+          <span id="avatarInitial">J</span>
+          <img id="avatarImg" src="" style="display:none" />
+        </div>
+        <div class="avatar-options">
+          <div class="avatar-title">Ảnh đại diện</div>
+          <div class="avatar-colors" id="avatarColors"></div>
+          <div class="avatar-emoji-row" id="avatarEmojis"></div>
+        </div>
+      </div>
+
+      <!-- Info form -->
+      <div class="profile-form">
+        <div class="pf-field">
+          <label>Username</label>
+          <input type="text" id="pfUsername" placeholder="tênđăngký" />
+        </div>
+        <div class="pf-field">
+          <label>Email</label>
+          <input type="email" id="pfEmail" placeholder="email@example.com" />
+        </div>
+        <div class="pf-error" id="pfInfoError"></div>
+        <button class="pf-submit" id="pfInfoSubmit" onclick="saveProfileInfo()">
+          Lưu thông tin
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB: Mật khẩu -->
+    <div class="profile-tab-content" id="ptab-password">
+      <div class="profile-form">
+        <div class="pf-field">
+          <label>Mật khẩu hiện tại</label>
+          <div class="pf-password-wrap">
+            <input type="password" id="pfCurrentPw" placeholder="••••••••" />
+            <button class="pf-eye" onclick="togglePw('pfCurrentPw',this)">👁</button>
+          </div>
+        </div>
+        <div class="pf-field">
+          <label>Mật khẩu mới</label>
+          <div class="pf-password-wrap">
+            <input type="password" id="pfNewPw" placeholder="Tối thiểu 6 ký tự" />
+            <button class="pf-eye" onclick="togglePw('pfNewPw',this)">👁</button>
+          </div>
+        </div>
+        <div class="pf-field">
+          <label>Xác nhận mật khẩu mới</label>
+          <div class="pf-password-wrap">
+            <input type="password" id="pfConfirmPw" placeholder="Nhập lại mật khẩu mới" />
+            <button class="pf-eye" onclick="togglePw('pfConfirmPw',this)">👁</button>
+          </div>
+        </div>
+        <!-- Strength bar -->
+        <div class="pw-strength-wrap" id="pwStrengthWrap" style="display:none">
+          <div class="pw-strength-bar"><div class="pw-strength-fill" id="pwStrengthFill"></div></div>
+          <div class="pw-strength-label" id="pwStrengthLabel"></div>
+        </div>
+        <div class="pf-error" id="pfPwError"></div>
+        <button class="pf-submit" id="pfPwSubmit" onclick="savePassword()">Đổi mật khẩu</button>
+      </div>
+    </div>
+
+    <!-- TAB: Cài đặt -->
+    <div class="profile-tab-content" id="ptab-settings">
+      <div class="profile-form">
+        <div class="pf-field">
+          <label>Đơn vị nhiệt độ mặc định</label>
+          <div class="pf-unit-toggle">
+            <button class="pf-unit-btn active" id="pfUnitC" onclick="selectUnit('metric')">
+              🌡 °C — Celsius
+            </button>
+            <button class="pf-unit-btn" id="pfUnitF" onclick="selectUnit('imperial')">
+              🌡 °F — Fahrenheit
+            </button>
+          </div>
+        </div>
+        <div class="pf-field">
+          <label>Thành phố yêu thích</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="pfFavCity" placeholder="Nhập tên thành phố..." style="flex:1" />
+            <button class="pf-submit" style="width:auto;padding:0 16px;margin-top:0" onclick="saveFavCity()">Lưu</button>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px" id="pfFavCityHint"></div>
+        </div>
+        <div class="pf-field" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+          <label style="color:var(--red)">Vùng nguy hiểm</label>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:10px">Xóa toàn bộ lịch sử tìm kiếm của bạn</div>
+          <button class="pf-submit pf-submit-danger" onclick="confirmDeleteAllHistory()">🗑 Xóa lịch sử tìm kiếm</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>

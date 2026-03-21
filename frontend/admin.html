@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JermSky Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#07090f;--sur:rgba(255,255,255,0.04);--bdr:rgba(255,255,255,0.08);--bhi:rgba(255,255,255,0.16);
+      --txt:#e4e8f7;--mut:rgba(228,232,247,0.45);--acc:#38bdf8;--ac2:#a78bfa;--grn:#34d399;--red:#f87171;--wrn:#fbbf24;
+      --sw:220px;--r:16px;--f:'Poppins',sans-serif}
+    body{background:var(--bg);color:var(--txt);font-family:var(--f);font-size:14px;min-height:100vh;display:flex}
+    .orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
+    .o1{width:500px;height:500px;background:#1e3a8a;opacity:.22;top:-150px;left:-100px}
+    .o2{width:400px;height:400px;background:#4c1d95;opacity:.18;bottom:-100px;right:-80px}
+
+    /* LOGIN */
+    #loginScreen{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+    #loginScreen.hidden{display:none}
+    .lbox{background:var(--sur);border:1px solid var(--bdr);border-radius:24px;padding:40px 36px;width:100%;max-width:380px}
+    .llogo{font-size:26px;font-weight:800;background:linear-gradient(135deg,var(--acc),var(--ac2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+    .lsub{font-size:13px;color:var(--mut);margin-bottom:28px}
+    .lf{margin-bottom:14px}
+    .lf label{display:block;font-size:11px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .lf input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--bdr);border-radius:10px;color:var(--txt);font-family:var(--f);font-size:14px;padding:11px 14px;outline:none;transition:border-color .2s}
+    .lf input:focus{border-color:var(--acc)}
+    .lf input::placeholder{color:var(--mut)}
+    .lerr{font-size:13px;color:#fca5a5;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:0;max-height:0;overflow:hidden;transition:all .3s}
+    .lerr.show{padding:10px 14px;max-height:60px;margin-bottom:14px}
+    .lbtn{width:100%;background:linear-gradient(135deg,var(--acc),var(--ac2));border:none;border-radius:12px;color:#07090f;font-family:var(--f);font-size:15px;font-weight:700;padding:13px;cursor:pointer;transition:opacity .2s;margin-top:6px}
+    .lbtn:hover{opacity:.88}
+    .lbtn:disabled{opacity:.5;cursor:not-allowed}
+
+    /* SIDEBAR */
+    .sidebar{width:var(--sw);min-height:100vh;background:rgba(255,255,255,.03);border-right:1px solid var(--bdr);
+      display:flex;flex-direction:column;padding:24px 14px;position:sticky;top:0;z-index:10;flex-shrink:0}
+    .slogo{font-size:20px;font-weight:800;background:linear-gradient(135deg,var(--acc),var(--ac2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+    .sbadge{display:inline-block;background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.3);border-radius:6px;color:#fca5a5;font-size:10px;font-weight:700;padding:2px 8px;letter-spacing:.08em;margin-bottom:28px}
+    .snav{display:flex;flex-direction:column;gap:4px;flex:1}
+    .nb{display:flex;align-items:center;gap:10px;background:none;border:1px solid transparent;border-radius:12px;color:var(--mut);font-family:var(--f);font-size:13px;font-weight:500;padding:10px 12px;cursor:pointer;transition:all .2s;text-align:left;width:100%}
+    .nb:hover{background:var(--sur);color:var(--txt);border-color:var(--bdr)}
+    .nb.active{background:linear-gradient(135deg,rgba(56,189,248,.14),rgba(167,139,250,.1));border-color:rgba(56,189,248,.3);color:var(--acc)}
+    .nb.active svg{stroke:var(--acc)}
+    .sfoot{border-top:1px solid var(--bdr);padding-top:14px}
+    .sau{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .sav{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--ac2));color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .san{font-size:13px;font-weight:600}
+    .sar{font-size:11px;color:var(--red)}
+    .lout{width:100%;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:10px;color:#fca5a5;font-family:var(--f);font-size:13px;padding:8px;cursor:pointer;transition:all .2s}
+    .lout:hover{background:rgba(248,113,113,.16)}
+
+    /* MAIN */
+    .main{flex:1;padding:28px 32px;overflow-y:auto;position:relative;z-index:1;min-width:0}
+    .page{display:none;animation:fu .35s ease}
+    .page.active{display:block}
+    @keyframes fu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+    .pt{font-size:22px;font-weight:700}
+    .ps{font-size:13px;color:var(--mut);margin-top:2px}
+
+    /* CARDS */
+    .glass{background:var(--sur);border:1px solid var(--bdr)}
+    .srow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+    .sc{border-radius:var(--r);padding:20px 18px;position:relative;overflow:hidden}
+    .sc::before{content:'';position:absolute;inset:0;pointer-events:none}
+    .sc.bl::before{background:linear-gradient(135deg,rgba(56,189,248,.08),transparent)}
+    .sc.pu::before{background:linear-gradient(135deg,rgba(167,139,250,.08),transparent)}
+    .sc.gr::before{background:linear-gradient(135deg,rgba(52,211,153,.08),transparent)}
+    .sc.rd::before{background:linear-gradient(135deg,rgba(248,113,113,.08),transparent)}
+    .sl{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--mut);margin-bottom:10px}
+    .sv{font-size:36px;font-weight:800;line-height:1}
+    .sv.bl{color:var(--acc)}.sv.pu{color:var(--ac2)}.sv.gr{color:var(--grn)}.sv.rd{color:var(--red)}
+    .sh{font-size:12px;color:var(--mut);margin-top:6px}
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+    .card{border-radius:var(--r);padding:20px}
+    .ct{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--mut);margin-bottom:16px}
+    .cb{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .cbn{font-size:13px;font-weight:500;min-width:110px}
+    .cbt{flex:1;height:6px;background:rgba(255,255,255,.07);border-radius:100px;overflow:hidden}
+    .cbf{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--ac2),var(--acc));transition:width .6s}
+    .cbc{font-size:12px;color:var(--mut);min-width:28px;text-align:right}
+    .ri{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--bdr)}
+    .ri:last-child{border-bottom:none}
+    .rc{font-weight:600;font-size:13px}
+    .ru{font-size:11px;color:var(--mut)}
+    /* TABLE */
+    .tb{display:flex;gap:10px;margin-bottom:14px;align-items:center}
+    .si{flex:1;max-width:300px;background:var(--sur);border:1px solid var(--bdr);border-radius:10px;color:var(--txt);font-family:var(--f);font-size:13px;padding:9px 14px;outline:none;transition:border-color .2s}
+    .si:focus{border-color:var(--acc)}
+    .si::placeholder{color:var(--mut)}
+    .btn{background:var(--sur);border:1px solid var(--bdr);border-radius:10px;color:var(--mut);font-family:var(--f);font-size:13px;font-weight:500;padding:8px 16px;cursor:pointer;transition:all .2s;white-space:nowrap}
+    .btn:hover{border-color:var(--acc);color:var(--acc)}
+    table{width:100%;border-collapse:collapse}
+    th{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--bdr)}
+    td{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px;vertical-align:middle}
+    tr:hover td{background:rgba(255,255,255,.02)}
+    .badge{display:inline-flex;align-items:center;gap:4px;border-radius:100px;font-size:11px;font-weight:600;padding:3px 10px}
+    .ba{background:rgba(248,113,113,.12);color:#fca5a5;border:1px solid rgba(248,113,113,.25)}
+    .bu{background:rgba(56,189,248,.1);color:#7dd3fc;border:1px solid rgba(56,189,248,.2)}
+    .ab{display:flex;gap:6px}
+    .ib{background:none;border:1px solid var(--bdr);border-radius:8px;color:var(--mut);font-family:var(--f);font-size:12px;padding:5px 10px;cursor:pointer;transition:all .2s;white-space:nowrap}
+    .ib:hover{border-color:var(--acc);color:var(--acc)}
+    .ib.d:hover{border-color:var(--red);color:var(--red)}
+    .pg{display:flex;align-items:center;gap:8px;margin-top:14px;justify-content:flex-end}
+    .pg span{font-size:13px;color:var(--mut)}
+    .pb{background:var(--sur);border:1px solid var(--bdr);border-radius:8px;color:var(--mut);font-family:var(--f);font-size:13px;padding:6px 12px;cursor:pointer;transition:all .2s}
+    .pb:hover:not(:disabled){border-color:var(--acc);color:var(--acc)}
+    .pb:disabled{opacity:.4;cursor:not-allowed}
+    /* TOAST */
+    .toast{position:fixed;bottom:24px;right:24px;z-index:999;border-radius:12px;padding:12px 18px;font-size:13.5px;font-weight:500;transform:translateY(80px);opacity:0;transition:all .35s;pointer-events:none}
+    .toast.show{transform:translateY(0);opacity:1}
+    .toast.ok{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:#6ee7b7}
+    .toast.err{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:#fca5a5}
+    /* CONFIRM */
+    .co{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+    .co.show{opacity:1;pointer-events:all}
+    .cb2{background:#0f1320;border:1px solid var(--bdr);border-radius:20px;padding:28px;max-width:380px;width:90%;text-align:center}
+    .ci{font-size:36px;margin-bottom:12px}
+    .cti{font-size:18px;font-weight:700;margin-bottom:6px}
+    .cd{font-size:13px;color:var(--mut);margin-bottom:20px;line-height:1.6}
+    .cbs{display:flex;gap:10px}
+    .cbs button{flex:1;border-radius:10px;font-family:var(--f);font-size:14px;font-weight:600;padding:11px;cursor:pointer;border:none;transition:opacity .2s}
+    .cbs .cc{background:var(--sur);color:var(--mut)}
+    .cbs .cok{background:var(--red);color:#fff}
+    .cbs button:hover{opacity:.85}
+    @media(max-width:900px){
+      .srow{grid-template-columns:repeat(2,1fr)}
+      .g2{grid-template-columns:1fr}
+      :root{--sw:56px}
+      .slogo,.sbadge,.nb span,.san,.sar,.lout{display:none}
+      .nb{justify-content:center;padding:12px}
+    }
+  </style>
+</head>
+<body>
+<div class="orb o1"></div><div class="orb o2"></div>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="lbox glass">
+    <div class="llogo">◈ JermSky</div>
+    <div class="lsub">Trang quản trị — Chỉ dành cho Admin</div>
+    <div class="lf"><label>Email</label><input type="email" id="lEmail" placeholder="admin@example.com"/></div>
+    <div class="lf"><label>Mật khẩu</label><input type="password" id="lPass" placeholder="••••••••"/></div>
+    <div class="lerr" id="lErr"></div>
+    <button class="lbtn" id="lBtn" onclick="doLogin()">Đăng nhập Admin</button>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar" style="display:none">
+  <div class="slogo">◈ JermSky</div>
+  <div class="sbadge">ADMIN PANEL</div>
+  <nav class="snav">
+    <button class="nb active" data-p="dashboard">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="nb" data-p="users">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Người dùng</span>
+    </button>
+    <button class="nb" data-p="history">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>Lịch sử tìm kiếm</span>
+    </button>
+  </nav>
+  <div class="sfoot">
+    <div class="sau"><div class="sav" id="sAv">A</div><div><div class="san" id="sNm">Admin</div><div class="sar">Administrator</div></div></div>
+    <button class="lout" onclick="doLogout()">Đăng xuất</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main" id="mainArea" style="display:none">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="ph">
+      <div><div class="pt">Dashboard</div><div class="ps" id="dSub">Tổng quan hệ thống</div></div>
+      <button class="btn" onclick="loadDash()">⟳ Làm mới</button>
+    </div>
+    <div class="srow">
+      <div class="sc glass bl"><div class="sl">👥 Tổng user</div><div class="sv bl" id="stU">—</div><div class="sh" id="stUh"></div></div>
+      <div class="sc glass pu"><div class="sl">🔑 Admin</div><div class="sv pu" id="stA">—</div><div class="sh">Tài khoản quản trị</div></div>
+      <div class="sc glass gr"><div class="sl">🔍 Tổng tìm kiếm</div><div class="sv gr" id="stS">—</div><div class="sh">Toàn bộ lượt tìm</div></div>
+      <div class="sc glass rd"><div class="sl">🆕 User hôm nay</div><div class="sv rd" id="stT">—</div><div class="sh">Đăng ký mới</div></div>
+    </div>
+    <div class="g2">
+      <div class="card glass"><div class="ct">📈 Tăng trưởng user (7 ngày)</div><canvas id="gChart" height="180"></canvas></div>
+      <div class="card glass"><div class="ct">🏙️ Thành phố phổ biến</div><div id="topC"></div></div>
+    </div>
+    <div class="card glass"><div class="ct">🕑 Tìm kiếm gần nhất</div>
+      <table><thead><tr><th>Thành phố</th><th>Người dùng</th><th>Thời tiết</th><th>Thời gian</th></tr></thead><tbody id="recT"></tbody></table>
+    </div>
+  </div>
+
+  <!-- USERS -->
+  <div class="page" id="page-users">
+    <div class="ph"><div><div class="pt">Người dùng</div><div class="ps" id="uSub"></div></div></div>
+    <div class="card glass">
+      <div class="tb">
+        <input class="si" id="uSrch" placeholder="Tìm username, email..." oninput="dbU()"/>
+        <button class="btn" onclick="loadUsers(1)">🔍</button>
+      </div>
+      <table><thead><tr><th>Người dùng</th><th>Email</th><th>Quyền</th><th>Tìm kiếm</th><th>Ngày tạo</th><th>Thao tác</th></tr></thead><tbody id="uTbl"></tbody></table>
+      <div class="pg"><button class="pb" id="uPrv" onclick="loadUsers(uP-1)">← Trước</button><span id="uPI"></span><button class="pb" id="uNxt" onclick="loadUsers(uP+1)">Sau →</button></div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="page" id="page-history">
+    <div class="ph"><div><div class="pt">Lịch sử tìm kiếm</div><div class="ps" id="hSub"></div></div></div>
+    <div class="card glass">
+      <div class="tb">
+        <input class="si" id="hSrch" placeholder="Tìm thành phố..." oninput="dbH()"/>
+        <button class="btn" onclick="loadHist(1)">🔍</button>
+      </div>
+      <table><thead><tr><th>Thành phố</th><th>Người dùng</th><th>Thời tiết</th><th>Mô tả</th><th>Thời gian</th><th></th></tr></thead><tbody id="hTbl"></tbody></table>
+      <div class="pg"><button class="pb" id="hPrv" onclick="loadHist(hP-1)">← Trước</button><span id="hPI"></span><button class="pb" id="hNxt" onclick="loadHist(hP+1)">Sau →</button></div>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+<div class="co" id="co"><div class="cb2"><div class="ci" id="coI">⚠️</div><div class="cti" id="coT">Xác nhận</div><div class="cd" id="coD"></div><div class="cbs"><button class="cc" onclick="closeCo()">Hủy</button><button class="cok" id="coOk">Xác nhận</button></div></div></div>
+
+<script>
+'use strict';
+const API='http://localhost:3000/api';
+let tok=localStorage.getItem('jermsky_admin_token')||'';
+let me=JSON.parse(localStorage.getItem('jermsky_admin_user')||'null');
+let uP=1,hP=1,gChart=null,uT=null,hT=null,coCb=null;
+
+window.addEventListener('DOMContentLoaded',()=>{
+  if(tok&&me?.isAdmin) showApp(); else showLogin();
+  document.querySelectorAll('.nb[data-p]').forEach(b=>b.addEventListener('click',()=>goPage(b.dataset.p)));
+  document.getElementById('lPass').addEventListener('keyup',e=>{if(e.key==='Enter')doLogin();});
+});
+
+function showLogin(){document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('sidebar').style.display='none';document.getElementById('mainArea').style.display='none';}
+function showApp(){
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('sidebar').style.display='';
+  document.getElementById('mainArea').style.display='';
+  document.getElementById('sNm').textContent=me?.username||'Admin';
+  document.getElementById('sAv').textContent=(me?.username||'A')[0].toUpperCase();
+  loadDash();
+}
+function goPage(p){
+  document.querySelectorAll('.nb[data-p]').forEach(b=>b.classList.toggle('active',b.dataset.p===p));
+  document.querySelectorAll('.page').forEach(pg=>pg.classList.toggle('active',pg.id===`page-${p}`));
+  if(p==='users')loadUsers(1);
+  if(p==='history')loadHist(1);
+}
+
+async function doLogin(){
+  const email=document.getElementById('lEmail').value.trim();
+  const pass=document.getElementById('lPass').value;
+  const errEl=document.getElementById('lErr');
+  const btn=document.getElementById('lBtn');
+  if(!email||!pass){errEl.textContent='Vui lòng nhập đầy đủ.';errEl.classList.add('show');return;}
+  btn.disabled=true;btn.textContent='Đang đăng nhập...';
+  try{
+    const r=await fetch(`${API}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+    const d=await r.json();
+    if(!r.ok){errEl.textContent=d.error;errEl.classList.add('show');return;}
+    if(!d.user.isAdmin){errEl.textContent='Tài khoản này không có quyền admin.';errEl.classList.add('show');return;}
+    tok=d.token;me=d.user;
+    localStorage.setItem('jermsky_admin_token',tok);
+    localStorage.setItem('jermsky_admin_user',JSON.stringify(me));
+    showApp();
+  }catch(e){errEl.textContent='Không kết nối được server.';errEl.classList.add('show');}
+  finally{btn.disabled=false;btn.textContent='Đăng nhập Admin';}
+}
+
+function doLogout(){tok='';me=null;localStorage.removeItem('jermsky_admin_token');localStorage.removeItem('jermsky_admin_user');showLogin();}
+
+async function req(path,opts={}){
+  const r=await fetch(`${API}${path}`,{headers:{'Content-Type':'application/json','Authorization':`Bearer ${tok}`},...opts});
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.error||`Lỗi ${r.status}`);
+  return d;
+}
+
+async function loadDash(){
+  try{
+    const {stats,topCities,recentSearches,userGrowth}=await req('/admin/stats');
+    document.getElementById('stU').textContent=stats.totalUsers;
+    document.getElementById('stA').textContent=stats.totalAdmins;
+    document.getElementById('stS').textContent=stats.totalSearches;
+    document.getElementById('stT').textContent=stats.newUsersToday;
+    document.getElementById('stUh').textContent=`${stats.totalUsers-stats.totalAdmins} user thường`;
+    document.getElementById('dSub').textContent=`Cập nhật ${new Date().toLocaleTimeString('vi-VN')}`;
+
+    // Growth chart
+    if(gChart)gChart.destroy();
+    const ctx=document.getElementById('gChart').getContext('2d');
+    const gr=ctx.createLinearGradient(0,0,0,180);
+    gr.addColorStop(0,'rgba(56,189,248,0.3)');gr.addColorStop(1,'rgba(56,189,248,0)');
+    gChart=new Chart(ctx,{
+      type:'line',
+      data:{labels:userGrowth.map(d=>{const[,m,dy]=d._id.split('-');return`${dy}/${m}`;}),
+        datasets:[{data:userGrowth.map(d=>d.count),borderColor:'#38bdf8',backgroundColor:gr,borderWidth:2.5,pointRadius:4,tension:.4,fill:true}]},
+      options:{responsive:true,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(7,9,15,.9)',borderColor:'rgba(56,189,248,.3)',borderWidth:1,titleColor:'#38bdf8',bodyColor:'#e4e8f7'}},
+        scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'rgba(228,232,247,.5)',font:{family:'Poppins',size:11}}},
+                y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'rgba(228,232,247,.5)',font:{family:'Poppins',size:11},stepSize:1}}}}
+    });
+
+    // Top cities
+    const mx=topCities[0]?.count||1;
+    document.getElementById('topC').innerHTML=topCities.map(c=>`
+      <div class="cb"><div class="cbn">${c._id}${c.country?', '+c.country:''}</div>
+      <div class="cbt"><div class="cbf" style="width:${(c.count/mx*100).toFixed(1)}%"></div></div>
+      <div class="cbc">${c.count}</div></div>`).join('');
+
+    // Recent
+    document.getElementById('recT').innerHTML=recentSearches.map(s=>`
+      <tr>
+        <td><b>${s.city}${s.country?', '+s.country:''}</b></td>
+        <td style="color:var(--mut)">${s.user?.username||'—'}<br/><span style="font-size:11px">${s.user?.email||''}</span></td>
+        <td>${s.weatherSnapshot?.icon?`<div style="display:flex;align-items:center;gap:6px"><img src="https://openweathermap.org/img/wn/${s.weatherSnapshot.icon}.png" width="28"/><span>${Math.round(s.weatherSnapshot.temp||0)}°C</span></div>`:'—'}</td>
+        <td style="color:var(--mut);font-size:12px">${new Date(s.createdAt).toLocaleString('vi-VN')}</td>
+      </tr>`).join('');
+  }catch(e){toast(e.message,'err');}
+}
+
+async function loadUsers(p=1){
+  uP=p;const s=document.getElementById('uSrch').value.trim();
+  try{
+    const d=await req(`/admin/users?page=${p}&limit=15${s?'&search='+encodeURIComponent(s):''}`);
+    document.getElementById('uSub').textContent=`Tổng: ${d.total} người dùng`;
+    document.getElementById('uPI').textContent=`Trang ${d.page}/${d.totalPages}`;
+    document.getElementById('uPrv').disabled=p<=1;
+    document.getElementById('uNxt').disabled=p>=d.totalPages;
+    document.getElementById('uTbl').innerHTML=d.users.map(u=>`
+      <tr>
+        <td><div style="display:flex;align-items:center;gap:10px">
+          <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,${u.isAdmin?'#f87171,#a78bfa':'#38bdf8,#818cf8'});display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#07090f;flex-shrink:0">${u.username[0].toUpperCase()}</div>
+          <div><div style="font-weight:600">${u.username}</div><div style="font-size:11px;color:var(--mut)">${u.favoriteCity||'—'}</div></div></div></td>
+        <td style="color:var(--mut)">${u.email}</td>
+        <td><span class="badge ${u.isAdmin?'ba':'bu'}">${u.isAdmin?'👑 Admin':'👤 User'}</span></td>
+        <td style="color:var(--acc);font-weight:600">${u.searchCount}</td>
+        <td style="color:var(--mut);font-size:12px">${new Date(u.createdAt).toLocaleDateString('vi-VN')}</td>
+        <td><div class="ab">
+          <button class="ib" onclick="doRole('${u.id}','${u.username}',${u.isAdmin})">${u.isAdmin?'🔒 Thu hồi':'👑 Cấp admin'}</button>
+          <button class="ib d" onclick="delUser('${u.id}','${u.username}')">🗑 Xóa</button>
+        </div></td>
+      </tr>`).join('');
+  }catch(e){toast(e.message,'err');}
+}
+let uDT=null;function dbU(){clearTimeout(uDT);uDT=setTimeout(()=>loadUsers(1),400);}
+
+function doRole(id,name,cur){
+  showCo(cur?'🔒':'👑',cur?'Thu hồi Admin':'Cấp Admin',`${cur?'Thu hồi quyền admin của':'Cấp quyền admin cho'} <b>${name}</b>?`,async()=>{
+    try{await req(`/admin/users/${id}/role`,{method:'PATCH',body:JSON.stringify({isAdmin:!cur})});toast(`Đã cập nhật quyền cho ${name}.`,'ok');loadUsers(uP);}
+    catch(e){toast(e.message,'err');}
+  });
+}
+function delUser(id,name){
+  showCo('🗑️','Xóa người dùng',`Xóa tài khoản <b>${name}</b>? Không thể hoàn tác.`,async()=>{
+    try{await req(`/admin/users/${id}`,{method:'DELETE'});toast(`Đã xóa "${name}".`,'ok');loadUsers(uP);}
+    catch(e){toast(e.message,'err');}
+  });
+}
+
+async function loadHist(p=1){
+  hP=p;const s=document.getElementById('hSrch').value.trim();
+  try{
+    const d=await req(`/admin/history?page=${p}&limit=15${s?'&search='+encodeURIComponent(s):''}`);
+    document.getElementById('hSub').textContent=`Tổng: ${d.total} lượt`;
+    document.getElementById('hPI').textContent=`Trang ${d.page}/${d.totalPages}`;
+    document.getElementById('hPrv').disabled=p<=1;
+    document.getElementById('hNxt').disabled=p>=d.totalPages;
+    document.getElementById('hTbl').innerHTML=d.history.map(h=>`
+      <tr>
+        <td><b>${h.city}${h.country?', '+h.country:''}</b></td>
+        <td><div style="font-weight:500">${h.user?.username||'—'}</div><div style="font-size:11px;color:var(--mut)">${h.user?.email||''}</div></td>
+        <td>${h.weatherSnapshot?.icon?`<div style="display:flex;align-items:center;gap:6px"><img src="https://openweathermap.org/img/wn/${h.weatherSnapshot.icon}.png" width="28"/><span>${Math.round(h.weatherSnapshot.temp||0)}°C</span></div>`:'—'}</td>
+        <td style="color:var(--mut);text-transform:capitalize">${h.weatherSnapshot?.description||'—'}</td>
+        <td style="color:var(--mut);font-size:12px">${new Date(h.createdAt).toLocaleString('vi-VN')}</td>
+        <td><button class="ib d" onclick="delHist('${h._id}')">🗑</button></td>
+      </tr>`).join('');
+  }catch(e){toast(e.message,'err');}
+}
+let hDT=null;function dbH(){clearTimeout(hDT);hDT=setTimeout(()=>loadHist(1),400);}
+
+function delHist(id){
+  showCo('🗑️','Xóa bản ghi','Xóa lịch sử tìm kiếm này?',async()=>{
+    try{await req(`/admin/history/${id}`,{method:'DELETE'});toast('Đã xóa.','ok');loadHist(hP);}
+    catch(e){toast(e.message,'err');}
+  });
+}
+
+function showCo(icon,title,desc,cb){
+  document.getElementById('coI').textContent=icon;
+  document.getElementById('coT').textContent=title;
+  document.getElementById('coD').innerHTML=desc;
+  coCb=cb;document.getElementById('co').classList.add('show');
+}
+function closeCo(){document.getElementById('co').classList.remove('show');coCb=null;}
+document.getElementById('coOk').addEventListener('click',async()=>{if(coCb)await coCb();closeCo();});
+document.getElementById('co').addEventListener('click',e=>{if(e.target===document.getElementById('co'))closeCo();});
+
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className=`toast ${type} show`;
+  setTimeout(()=>el.classList.remove('show'),3500);
+}
+</script>
+</body>
+</html>

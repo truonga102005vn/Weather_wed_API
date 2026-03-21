@@ -12,6 +12,7 @@ const rateLimit  = require('express-rate-limit');
 const weatherRoutes = require('./routes/weather');
 const authRoutes    = require('./routes/auth');
 const historyRoutes = require('./routes/history');
+const adminRoutes   = require('./routes/admin');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -38,6 +39,7 @@ app.use('/api', rateLimit({
 app.use('/api/weather', weatherRoutes);
 app.use('/api/auth',    authRoutes);
 app.use('/api/history', historyRoutes);
+app.use('/api/admin',   adminRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
